@@ -16,6 +16,7 @@ class Score:
 class Character:
     def __init__(self):
         self.size = 50
+        self.dead = False
         self.x = root.winfo_screenwidth()/2
         self.y = (root.winfo_screenheight()/100)*92 - self.size/2
         self.cursorX = self.x
@@ -25,13 +26,13 @@ class Character:
         self.aim = canvas.create_line(self.x,self.y,self.x,self.y)
     def moveLeft(self,event):
         self.x -= 10
-
     def moveRight(self,event):
         self.x += 10
 
     def moveCursor(self,event):
-        if not event.x > self.x + self.gunStength or not event.x < self.x - self.gunStength or not event.y > self.y + self.gunStength or not event.y < self.y - self.gunStength:
+        if event.x < self.x + self.gunStength and event.x > self.x - self.gunStength:
             self.cursorX = event.x
+        if event.y < self.y + self.gunStength and event.y > self.y - self.gunStength:
             self.cursorY = event.y
     def fire(self,event):
         i = 0
@@ -42,11 +43,19 @@ class Character:
                 enemy.hit()
 
             i += 1
+    def isHit(self):
+        r = 0
+        while r < len(enemys):
+            enemy = enemys[r]
+            if enemy.y + enemy.size >= self.y - self.size or (enemy.x + enemy.size >= self.x - self.size and enemy.x + enemy.size >= self.x - self.size) or enemy.x - enemy.size <= self.x + self.size:
+                self.dead = True
+            r += 1
     def render(self):
         canvas.delete(self.graphics)
         canvas.delete(self.aim)
-        self.aim = canvas.create_line(self.x,self.y,self.cursorX,self.cursorY,fill = "blue")
-        self.graphics = canvas.create_rectangle(self.x - self.size/2,self.y - self.size/2,self.x + self.size/2,self.y + self.size/2,fill = "red")
+        if not self.dead:
+            self.aim = canvas.create_line(self.x,self.y,self.cursorX,self.cursorY,fill = "blue")
+            self.graphics = canvas.create_rectangle(self.x - self.size/2,self.y - self.size/2,self.x + self.size/2,self.y + self.size/2,fill = "red")
 
 class Enemy():
     def __init__(self):
@@ -93,5 +102,6 @@ while True:
 
     canvas.delete(score.scoreText)
     score.scoreText = canvas.create_text(root.winfo_screenwidth()/2,100,text = score.score,fill = "white",font = ('TkTextFont',100))
+    #character.isHit()
     character.render()
     root.update()
