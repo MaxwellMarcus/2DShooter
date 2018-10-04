@@ -1,4 +1,4 @@
-from tkinter import *
+from Tkinter import *
 import random
 import time
 
@@ -8,6 +8,11 @@ canvas = Canvas(root,width = root.winfo_screenwidth(),height = root.winfo_screen
 canvas.pack()
 
 startTime = time.time()
+class Score:
+    def __init__(self):
+        self.score = 0
+        self.scoreText = canvas.create_text(root.winfo_screenwidth()/2,100,text = self.score,font = 100)
+        canvas.create_text(root.winfo_screenwidth()/3,100,text = "Scrore: ",font = ('TkTextFont',100),fill = "white")
 class Character:
     def __init__(self):
         self.size = 50
@@ -33,7 +38,9 @@ class Character:
         while i < len(enemys):
             enemy = enemys[i]
             if self.cursorX < enemy.x + enemy.size and self.cursorX > enemy.x - enemy.size and self.cursorY < enemy.y + enemy.size and self.cursorY > enemy.y - enemy.size:
+                score.score += 1
                 enemy.hit()
+
             i += 1
     def render(self):
         canvas.delete(self.graphics)
@@ -49,19 +56,24 @@ class Enemy():
         self.y = (root.winfo_screenheight()/100)*92 - self.size/2
         self.graphics = self.graphics = canvas.create_rectangle(self.x - self.size/2,self.y - self.size/2,self.x + self.size/2,self.y + self.size/2,fill = "green")
     def jump(self):
-        if self.y == (root.winfo_screenheight()/100)*92 - self.size/2:
-            self.y -= 200
+        if self.y >= (root.winfo_screenheight()/100)*92 - self.size/2:
+            '''self.now = time.time()
+            while time.time < self.now + 1:
+                pass'''
+            self.y -= 100
     def gravity(self):
-        if self.y > (root.winfo_screenheight()/100)*92:
-            self.y += 1
+        if self.y < (root.winfo_screenheight()/100)*92:
+            self.y += 3
     def render(self):
         canvas.delete(self.graphics)
         if not self.dead:
             self.graphics = canvas.create_rectangle(self.x - self.size/2,self.y - self.size/2,self.x + self.size/2,self.y + self.size/2,fill = "green")
     def hit(self):
         self.dead = True
+        self.y = 1000000
 character = Character()
 enemys = [Enemy()]
+score = Score()
 
 root.bind("a",character.moveLeft)
 root.bind("d",character.moveRight)
@@ -78,5 +90,8 @@ while True:
         enemys[r].gravity()
         enemys[r].render()
         r += 1
+
+    canvas.delete(score.scoreText)
+    score.scoreText = canvas.create_text(root.winfo_screenwidth()/2,100,text = score.score,fill = "white",font = ('TkTextFont',100))
     character.render()
     root.update()
