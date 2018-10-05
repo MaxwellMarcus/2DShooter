@@ -1,4 +1,4 @@
-from Tkinter import *
+from tkinter import *
 import random
 import time
 
@@ -7,7 +7,15 @@ root = Tk()
 canvas = Canvas(root,width = root.winfo_screenwidth(),height = root.winfo_screenheight(),background = "black")
 canvas.pack()
 
+avatarBlue = PhotoImage("avatarBlue.gif")
+avatarRed = PhotoImage("avatarRed.gif")
+canvas.create_text(root.winfo_screenwidth()/2,root.winfo_screenheight()/2 - 300,text = '''2DShooter.py''',fill = "white",font = ("TkTextFont",175))
+canvas.create_text(root.winfo_screenwidth()/2,root.winfo_screenheight()/2,text = '''press left mouse to fire''',fill = "gray7",font = ("TkTextFont",25))
+canvas.create_text(root.winfo_screenwidth()/2, root.winfo_screenheight()/2 + 50,text = '''move mouse to aim''',fill = "gray7",font = ("TkTextFont",25))
+canvas.create_text(root.winfo_screenwidth()/2,root.winfo_screenheight()/2 + 300,text = '''Press any key to continue''',fill = "gray7",font = ("TkTextFont",75))
+
 startTime = time.time()
+startLoop = False
 class Score:
     def __init__(self):
         self.score = 0
@@ -22,7 +30,7 @@ class Character:
         self.cursorX = self.x
         self.cursorY = self.y
         self.gunStength = 400
-        self.graphics = self.graphics = canvas.create_rectangle(self.x - self.size/2,self.y - self.size/2,self.x + self.size/2,self.y + self.size/2,fill = "red")
+        self.graphics = canvas.create_image(self.x,self.y,image = avatarBlue)
         self.aim = canvas.create_line(self.x,self.y,self.x,self.y)
     def moveLeft(self,event):
         self.x -= 10
@@ -39,7 +47,7 @@ class Character:
         while i < len(enemys):
             enemy = enemys[i]
             if self.cursorX < enemy.x + enemy.size and self.cursorX > enemy.x - enemy.size and self.cursorY < enemy.y + enemy.size and self.cursorY > enemy.y - enemy.size:
-                score.score += 1
+                score.score += int(10/(time.time() - enemy.timeborn))
                 enemy.hit()
 
             i += 1
@@ -54,11 +62,12 @@ class Character:
         canvas.delete(self.graphics)
         canvas.delete(self.aim)
         if not self.dead:
-            self.aim = canvas.create_line(self.x,self.y,self.cursorX,self.cursorY,fill = "blue")
-            self.graphics = canvas.create_rectangle(self.x - self.size/2,self.y - self.size/2,self.x + self.size/2,self.y + self.size/2,fill = "red")
+            self.aim = canvas.create_line(self.x,self.y,self.cursorX,self.cursorY,fill = "blue",width = 10)
+            self.graphics = canvas.create_image(self.x,self.y)
 
-class Enemy():
+class Enemy:
     def __init__(self):
+        self.timeborn = time.time()
         self.size = 50
         self.dead = False
         self.x = random.randint(0,root.winfo_screenwidth())
@@ -80,28 +89,37 @@ class Enemy():
     def hit(self):
         self.dead = True
         self.y = 1000000
-character = Character()
-enemys = [Enemy()]
-score = Score()
-
-root.bind("a",character.moveLeft)
-root.bind("d",character.moveRight)
-root.bind("<Motion>",character.moveCursor)
-root.bind("<Button-1>",character.fire)
-
-while True:
-    if time.time() > startTime + len(enemys)*1:
-        enemys.append(Enemy())
-        timeEnemyAdded = time.time()
-    r = 0
-    while r < len(enemys):
-        enemys[r].jump()
-        enemys[r].gravity()
-        enemys[r].render()
-        r += 1
-
-    canvas.delete(score.scoreText)
-    score.scoreText = canvas.create_text(root.winfo_screenwidth()/2,100,text = score.score,fill = "white",font = ('TkTextFont',100))
-    #character.isHit()
-    character.render()
+def start(event):
+    global startLoop
+    startLoop = True
+root.bind("<Key>",start)
+root.update()
+while startLoop == False:
     root.update()
+    if startLoop == True:
+        canvas.delete(ALL)
+        character = Character()
+        enemys = [Enemy()]
+        score = Score()
+
+        root.bind("a",character.moveLeft)
+        root.bind("d",character.moveRight)
+        root.bind("<Button-1>",character.fire)
+        root.bind("<Motion>",character.moveCursor)
+        while True:
+            if time.time() > startTime + len(enemys)*1:
+                enemys.append(Enemy())
+                timeEnemyAdded = time.time()
+            r = 0
+            while r < len(enemys):
+                enemys[r].jump()
+                enemys[r].gravity()
+                enemys[r].render()
+                r += 1
+
+            canvas.delete(score.scoreText)
+            score.scoreText = canvas.create_text(root.winfo_screenwidth()/2,100,text = score.score,fill = "white",font = ('TkTextFont',100))
+        #    character.moveCursor()
+            #character.isHit()
+            character.render()
+            root.update()
