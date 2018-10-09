@@ -1,14 +1,20 @@
 from tkinter import *
+import keyboard
 import random
 import time
 
 root = Tk()
+root.config(cursor = "none")
 
 canvas = Canvas(root,width = root.winfo_screenwidth(),height = root.winfo_screenheight(),background = "black")
 canvas.pack()
 
-avatarBlue = PhotoImage("avatarBlue.gif")
-avatarRed = PhotoImage("avatarRed.gif")
+avatarBlue = PhotoImage(file = "avatarBlue.gif")
+avatarBlueNewSize = int(avatarBlue.width()/50)
+avatarBlue = avatarBlue.subsample(avatarBlueNewSize)
+avatarRed = PhotoImage(file = "avatarRed.gif")
+avatarRedNewSize = int(avatarRed.width()/50)
+avatarRed = avatarRed.subsample(avatarRedNewSize)
 canvas.create_text(root.winfo_screenwidth()/2,root.winfo_screenheight()/2 - 300,text = '''2DShooter.py''',fill = "white",font = ("TkTextFont",175))
 canvas.create_text(root.winfo_screenwidth()/2,root.winfo_screenheight()/2,text = '''press left mouse to fire''',fill = "gray7",font = ("TkTextFont",25))
 canvas.create_text(root.winfo_screenwidth()/2, root.winfo_screenheight()/2 + 50,text = '''move mouse to aim''',fill = "gray7",font = ("TkTextFont",25))
@@ -25,6 +31,10 @@ class Character:
     def __init__(self):
         self.size = 50
         self.dead = False
+        self.left = False
+        self.right = False
+        self.down = False
+        self.up = False
         self.x = root.winfo_screenwidth()/2
         self.y = (root.winfo_screenheight()/100)*92 - self.size/2
         self.cursorX = self.x
@@ -32,16 +42,42 @@ class Character:
         self.gunStength = 400
         self.graphics = canvas.create_image(self.x,self.y,image = avatarBlue)
         self.aim = canvas.create_line(self.x,self.y,self.x,self.y)
-    def moveLeft(self,event):
-        self.x -= 10
-    def moveRight(self,event):
-        self.x += 10
-
-    def moveCursor(self,event):
-        if event.x < self.x + self.gunStength and event.x > self.x - self.gunStength:
-            self.cursorX = event.x
-        if event.y < self.y + self.gunStength and event.y > self.y - self.gunStength:
-            self.cursorY = event.y
+    def changeMove(self,event):
+        print("pressed ", event.char)
+        if event.char == "a":
+            self.left = True
+        if event.char == "d":
+            self.right = True
+        if event.char == "s":
+            self.down = True
+        if event.char == "w":
+            self.up = True
+    def stopMove(self,event):
+        print("released ", event.char)
+        if event.char == "a":
+            self.left = False
+        if event.char == "d":
+            self.right = False
+        if event.char == "s":
+            self.down = False
+        if event.char == "w":
+            self.up = False
+    def move(self):
+        if self.left:
+            self.x -= 10
+        if self.right:
+            self.x += 10
+        if self.down:
+            self.y += 10
+        if self.up:
+            self.y -= 10
+    def moveCursor(self):
+        self.mousePosX = root.winfo_pointerx()
+        self.mousePosY = root.winfo_pointery()
+        if self.mousePosX < self.x + self.gunStength and self.mousePosX > self.x - self.gunStength:
+            self.cursorX = self.mousePosX
+        if self.mousePosY < self.y + self.gunStength and self.mousePosY > self.y - self.gunStength:
+            self.cursorY = self.mousePosY
     def fire(self,event):
         i = 0
         while i < len(enemys):
@@ -63,7 +99,7 @@ class Character:
         canvas.delete(self.aim)
         if not self.dead:
             self.aim = canvas.create_line(self.x,self.y,self.cursorX,self.cursorY,fill = "blue",width = 10)
-            self.graphics = canvas.create_image(self.x,self.y)
+            self.graphics = canvas.create_image(self.x,self.y,image = avatarBlue)
 
 class Enemy:
     def __init__(self):
@@ -85,7 +121,7 @@ class Enemy:
     def render(self):
         canvas.delete(self.graphics)
         if not self.dead:
-            self.graphics = canvas.create_rectangle(self.x - self.size/2,self.y - self.size/2,self.x + self.size/2,self.y + self.size/2,fill = "green")
+            self.graphics = canvas.create_image(self.x,self.y,image = avatarRed)
     def hit(self):
         self.dead = True
         self.y = 1000000
@@ -102,10 +138,10 @@ while startLoop == False:
         enemys = [Enemy()]
         score = Score()
 
-        root.bind("a",character.moveLeft)
-        root.bind("d",character.moveRight)
         root.bind("<Button-1>",character.fire)
-        root.bind("<Motion>",character.moveCursor)
+        root.bind('<KeyPress>',character.changeMove)
+        root.bind('<KeyRelease>', character.stopMove)
+        #root.bind("<Motion>",caracter.moveCursor)
         while True:
             if time.time() > startTime + len(enemys)*1:
                 enemys.append(Enemy())
@@ -119,7 +155,8 @@ while startLoop == False:
 
             canvas.delete(score.scoreText)
             score.scoreText = canvas.create_text(root.winfo_screenwidth()/2,100,text = score.score,fill = "white",font = ('TkTextFont',100))
-        #    character.moveCursor()
+            character.moveCursor()
+            character.move()
             #character.isHit()
             character.render()
             root.update()
