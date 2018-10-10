@@ -19,7 +19,7 @@ class Score:
     def __init__(self):
         self.score = 0
         self.scoreText = canvas.create_text(root.winfo_screenwidth()/2,100,text = self.score,font = 100)
-        canvas.create_text(root.winfo_screenwidth()/3,100,text = "Scrore: ",font = ('TkTextFont',100),fill = "white")
+        canvas.create_text(root.winfo_screenwidth()/3,100,text = "Score: ",font = ('TkTextFont',100),fill = "white")
 class Character:
     def __init__(self):
         self.size = root.winfo_screenwidth()/25
@@ -28,15 +28,17 @@ class Character:
         self.right = False
         self.down = False
         self.up = False
+        self.aimcolor = "blue"
+        self.aimcolorchange = 0
         self.speedx = root.winfo_screenwidth()/250
         self.speedy = root.winfo_screenheight()/250
         self.x = root.winfo_screenwidth()/2
         self.y = (root.winfo_screenheight()/100)*92 - self.size/2
         self.cursorX = self.x
         self.cursorY = self.y
-        '''avatarBlue = PhotoImage(file = r"avatarBlue.gif")
-        avatarBlueNewSize = int(avatarBlue.width()/self.size)
-        avatarBlue = avatarBlue.subsample(avatarBlueNewSize)'''
+        self.avatarBlue = PhotoImage(file = "avatarBlue.gif")
+        self.avatarBlueNewSize = int(self.avatarBlue.width()/self.size)
+        self.avatarBlue = self.avatarBlue.subsample(self.avatarBlueNewSize)
         self.gunStrength = root.winfo_screenwidth()/5
         self.graphics = canvas.create_rectangle(self.x - self.size/2,self.y - self.size/2,self.x + self.size/2,self.y - self.size/2)
         self.aim = canvas.create_line(self.x,self.y,self.x,self.y)
@@ -60,13 +62,17 @@ class Character:
             self.up = False
     def move(self):
         if self.left:
-            self.x -= self.speedx
+            if self.x > 0 + self.size/2:
+                self.x -= self.speedx
         if self.right:
-            self.x += self.speedx
+            if self.x < root.winfo_screenwidth() - self.size/2:
+                self.x += self.speedx
         if self.down:
-            self.y += self.speedy
+            if self.y < root.winfo_screenheight() - self.size/2:
+                self.y += self.speedy
         if self.up:
-            self.y -= self.speedy
+            if self.y > 0 + self.size/2:
+                self.y -= self.speedy
     def moveCursor(self):
         self.mousePosX = root.winfo_pointerx()
         self.mousePosY = root.winfo_pointery()
@@ -86,6 +92,8 @@ class Character:
                 self.cursorY = self.y - self.gunStrength
     def fire(self,event):
         i = 0
+        self.aimcolor = "green"
+        self.aimcolorchange = time.time()
         while i < len(enemys):
             enemy = enemys[i]
             if self.cursorX < enemy.x + enemy.size and self.cursorX > enemy.x - enemy.size and self.cursorY < enemy.y + enemy.size and self.cursorY > enemy.y - enemy.size:
@@ -103,20 +111,22 @@ class Character:
     def render(self):
         canvas.delete(self.graphics)
         canvas.delete(self.aim)
+        if time.time() - self.aimcolorchange > .1:
+            self.aimcolor = "blue"
+            self.aimcolorchange = 0
         if not self.dead:
-            self.aim = canvas.create_line(self.x,self.y,self.cursorX,self.cursorY,fill = "blue",width = 10)
-            self.graphics = canvas.create_rectangle(self.x - self.size/2,self.y - self.size/2,self.x + self.size/2,self.y + self.size/2,fill = "green")
-            #self.graphics = canvas.create_image(self.x,self.y,image = avatarBlue)
+            self.aim = canvas.create_line(self.x,self.y,self.cursorX,self.cursorY,fill = self.aimcolor,width = 10)
+            #self.graphics = canvas.create_rectangle(self.x - self.size/2,self.y - self.size/2,self.x + self.size/2,self.y + self.size/2,fill = "green")
+            self.graphics = canvas.create_image(self.x,self.y,image = self.avatarBlue)
 
 class Enemy:
     def __init__(self):
         self.timeborn = time.time()
         self.size = root.winfo_screenwidth()/25
         self.dead = False
-        '''
-        avatarRed = PhotoImage(file = r"avatarRed.gif")
-        avatarRedNewSize = int(avatarRed.width()/self.size)
-        avatarRed = avatarRed.subsample(avatarRedNewSize)'''
+        self.avatarRed = PhotoImage(file = "avatarRed.gif")
+        self.avatarRedNewSize = int(self.avatarRed.width()/self.size)
+        self.avatarRed = self.avatarRed.subsample(self.avatarRedNewSize)
         self.x = random.randint(0,root.winfo_screenwidth())
         self.y = random.randint(0,root.winfo_screenheight())
         self.originalx = self.x
@@ -129,19 +139,19 @@ class Enemy:
             self.direction = random.randint(1,2)
             while self.modifier == 0:
                 self.modifier = random.randint(-1,1)
-            
+
             if self.direction == 2:
                 self.y += self.jumpheight*self.modifier
             else:
                 self.x += self.jumpheight*self.modifier
-            
+
     def gravity(self):
         if self.y < (root.winfo_screenheight()/100)*92:
             self.y += 3
     def render(self):
         canvas.delete(self.graphics)
         if not self.dead:
-            self.graphics = canvas.create_rectangle(self.x - self.size/2,self.y - self.size/2,self.x + self.size/2,self.y + self.size/2,fill = "red")
+            self.graphics = canvas.create_image(self.x,self.y,image = self.avatarRed)
     def hit(self):
         self.dead = True
         self.y = 1000000
