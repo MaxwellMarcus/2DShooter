@@ -18,11 +18,12 @@ startLoop = False
 startTime = time.time()
 objects = []
 class Character:
-    def __init__(self,name,left,right,jump,file):
+    def __init__(self,name,left,right,jump,moveAim,file):
         self.size = root.winfo_screenwidth()/25
         self.leftInput = left
         self.rightInput = right
         self.jumpInput = jump
+        self.mouseInput = moveAim
         self.dead = False
         self.left = False
         self.right = False
@@ -57,6 +58,16 @@ class Character:
         if event.keysym in self.jumpInput:
             if self.y == self.originaly:
                 self.jump = True
+        if not self.mouseInput == 'motion':
+            print('worling')
+            if event.keysym == self.mouseInput[0]:
+                self.cursorY -= 1
+            if event.keysym == self.mouseInput[1]:
+                self.cursorX += 1
+            if event.keysym == self.mouseInput[2]:
+                self.cursorY += 1
+            if event.keysym == self.mouseInput[3]:
+                self.cursorX += 1
 
     def stopMove(self,event):
         if event.keysym == "a":
@@ -81,38 +92,36 @@ class Character:
                     self.jumped = 0
         if not self.y == self.originaly and not self.jump:
             self.y += .5
-
     def moveCursor(self):
-        self.mousePosX = root.winfo_pointerx()
-        self.mousePosY = root.winfo_pointery()
-        if self.mousePosX < self.x + self.gunStrength and self.mousePosX > self.x - self.gunStrength:
-            self.cursorX = self.mousePosX
-        else:
-            if self.mousePosX > self.x:
-                self.cursorX = self.x + self.gunStrength
-            if self.mousePosX < self.x:
-                self.cursorX = self.x - self.gunStrength
-        if self.mousePosY < self.y + self.gunStrength and self.mousePosY > self.y - self.gunStrength:
-            self.cursorY = self.mousePosY
-        else:
-            if self.mousePosY > self.y:
-                self.cursorY = self.y + self.gunStrength
-            if self.mousePosY < self.y:
-                self.cursorY = self.y - self.gunStrength
+        if self.mouseInput == 'motion':
+            self.mousePosX = root.winfo_pointerx()
+            self.mousePosY = root.winfo_pointery()
+            if self.mousePosX < self.x + self.gunStrength and self.mousePosX > self.x - self.gunStrength:
+                self.cursorX = self.mousePosX
+            else:
+                if self.mousePosX > self.x:
+                    self.cursorX = self.x + self.gunStrength
+                if self.mousePosX < self.x:
+                    self.cursorX = self.x - self.gunStrength
+            if self.mousePosY < self.y + self.gunStrength and self.mousePosY > self.y - self.gunStrength:
+                self.cursorY = self.mousePosY
+            else:
+                if self.mousePosY > self.y:
+                    self.cursorY = self.y + self.gunStrength
+                if self.mousePosY < self.y:
+                    self.cursorY = self.y - self.gunStrength
     def fire(self,event):
         i = 0
         self.aimcolor = "black"
         self.aimcolorchange = time.time()
-        while i < len(objects)-1:
+        while i < len(objects):
             objects[i].isHit(self.cursorX,self.cursorY)
             i += 1
     def isHit(self,x,y):
         if x > self.x - self.size/2 and x < self.x + self.size/2:
-            print("worling")
             if y > self.y - self.size/2 and y < self.x + self.size/2:
-                print("working")
                 self.dead = True
-                objects.remove(self.name)
+                objects.remove(objects[self.name])
 
     def render(self):
         canvas.delete(self.graphics)
@@ -134,9 +143,9 @@ while startLoop == False:
     root.update()
     if startLoop == True:
         canvas.delete(ALL)
-        character = Character(0,['a'],['d'],['w','s'],'avatarBlue.gif')
+        character = Character(0,['a'],['d'],['w','s'],['i','l','k','j'],'avatarBlue.gif')
         objects.append(character)
-        player = Character(1,['Left'],['Right'],['Up','Down'],'avatarRed.gif')
+        player = Character(1,['Left'],['Right'],['Up','Down'],'motion','avatarRed.gif')
         objects.append(player)
         while True:
             character.moveCursor()
