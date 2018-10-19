@@ -16,8 +16,9 @@ canvas.create_text(root.winfo_screenwidth()/2,root.winfo_screenheight()/2 + 300,
 startLoop = False
 
 startTime = time.time()
+objects = []
 class Character:
-    def __init__(self,left,right,jump,file):
+    def __init__(self,name,left,right,jump,file):
         self.size = root.winfo_screenwidth()/25
         self.leftInput = left
         self.rightInput = right
@@ -42,24 +43,25 @@ class Character:
         self.aim = canvas.create_line(self.x,self.y,self.x,self.y)
         self.jump = False
         self.jumped = 0
+        self.name = name
 
-        root.bind("<Button-1>", self.fire)
-        root.bind('<KeyPress>', self.changeMove)
-        root.bind('<KeyRelease>', self.stopMove)
+        root.bind("<Button-1>", self.fire,add='+')
+        root.bind('<KeyPress>', self.changeMove,add='+')
+        root.bind('<KeyRelease>', self.stopMove,add='+')
 
     def changeMove(self,event):
-        print(self)
-        if event.char in self.leftInput:
+        if event.keysym in self.leftInput:
             self.left = True
-        if event.char in self.rightInput:
+        if event.keysym in self.rightInput:
             self.right = True
-        if event.char in self.jumpInput:
-            self.jump = True
+        if event.keysym in self.jumpInput:
+            if self.y == self.originaly:
+                self.jump = True
 
     def stopMove(self,event):
-        if event.char == "a":
+        if event.keysym == "a":
             self.left = False
-        if event.char == "d":
+        if event.keysym == "d":
             self.right = False
 
     def move(self):
@@ -72,19 +74,14 @@ class Character:
         if self.jump:
             if self.y == self.originaly or self.jump:
                 if self.jumped < self.size * 3:
-                    self.y -= 1
-                    self.jumped += 1
+                    self.y -= .5
+                    self.jumped += .5
                 else:
                     self.jump = False
                     self.jumped = 0
         if not self.y == self.originaly and not self.jump:
-            self.y += 1
-        '''if self.down:
-            if self.y < root.winfo_screenheight() - self.size/2:
-                self.y += self.speedy
-        if self.up:
-            if self.y > 0 + self.size/2:
-                self.y -= self.speedy'''
+            self.y += .5
+
     def moveCursor(self):
         self.mousePosX = root.winfo_pointerx()
         self.mousePosY = root.winfo_pointery()
@@ -106,20 +103,17 @@ class Character:
         i = 0
         self.aimcolor = "black"
         self.aimcolorchange = time.time()
-    '''    while i < len(enemys):
-            enemy = enemys[i]
-            if self.cursorX < enemy.x + enemy.size and self.cursorX > enemy.x - enemy.size and self.cursorY < enemy.y + enemy.size and self.cursorY > enemy.y - enemy.size:
-                score.score += int(10/(time.time() - enemy.timeborn))
-                enemy.hit()'''
-
-            #i += 1
-    def isHit(self):
-        r = 0
-        while r < len(enemys):
-            enemy = enemys[r]
-            if enemy.y + enemy.size >= self.y - self.size or (enemy.x + enemy.size >= self.x - self.size and enemy.x + enemy.size >= self.x - self.size) or enemy.x - enemy.size <= self.x + self.size:
+        while i < len(objects)-1:
+            objects[i].isHit(self.cursorX,self.cursorY)
+            i += 1
+    def isHit(self,x,y):
+        if x > self.x - self.size/2 and x < self.x + self.size/2:
+            print("worling")
+            if y > self.y - self.size/2 and y < self.x + self.size/2:
+                print("working")
                 self.dead = True
-            r += 1
+                objects.remove(self.name)
+
     def render(self):
         canvas.delete(self.graphics)
         canvas.delete(self.aim)
@@ -128,7 +122,6 @@ class Character:
             self.aimcolorchange = 0
         if not self.dead:
             self.aim = canvas.create_line(self.x,self.y,self.cursorX,self.cursorY,fill = self.aimcolor,width = 10)
-            #self.graphics = canvas.create_rectangle(self.x - self.size/2,self.y - self.size/2,self.x + self.size/2,self.y + self.size/2,fill = "green")
             self.graphics = canvas.create_image(self.x,self.y,image = self.avatarBlue)
 
 def start(event):
@@ -141,9 +134,10 @@ while startLoop == False:
     root.update()
     if startLoop == True:
         canvas.delete(ALL)
-        character = Character(['a'],['d'],['w','s'])
-        player = Character(['<left>'],['<right>'],['<up>','<down>'])
-
+        character = Character(0,['a'],['d'],['w','s'],'avatarBlue.gif')
+        objects.append(character)
+        player = Character(1,['Left'],['Right'],['Up','Down'],'avatarRed.gif')
+        objects.append(player)
         while True:
             character.moveCursor()
             character.move()
