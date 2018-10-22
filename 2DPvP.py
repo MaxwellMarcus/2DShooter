@@ -27,6 +27,10 @@ class Character:
         self.dead = False
         self.left = False
         self.right = False
+        self.mouseUp = False
+        self.mouseDown = False
+        self.mouseLeft = False
+        self.mouseRight = False
         self.aimcolor = "blue"
         self.aimcolorchange = 0
         self.speedx = root.winfo_screenwidth()/2500
@@ -59,21 +63,29 @@ class Character:
             if self.y == self.originaly:
                 self.jump = True
         if not self.mouseInput == 'motion':
-            print('worling')
             if event.keysym == self.mouseInput[0]:
-                self.cursorY -= 1
+                self.mouseUp = True
             if event.keysym == self.mouseInput[1]:
-                self.cursorX += 1
+                self.mouseRight = True
             if event.keysym == self.mouseInput[2]:
-                self.cursorY += 1
+                self.mouseDown = True
             if event.keysym == self.mouseInput[3]:
-                self.cursorX += 1
+                self.mouseLeft = True
 
     def stopMove(self,event):
         if event.keysym == "a":
             self.left = False
         if event.keysym == "d":
             self.right = False
+        if not self.mouseInput == 'motion':
+            if event.keysym == self.mouseInput[0]:
+                self.mouseUp = False
+            if event.keysym == self.mouseInput[1]:
+                self.mouseRight = False
+            if event.keysym == self.mouseInput[2]:
+                self.mouseDown = False
+            if event.keysym == self.mouseInput[3]:
+                self.mouseLeft = False
 
     def move(self):
         if self.left:
@@ -110,6 +122,15 @@ class Character:
                     self.cursorY = self.y + self.gunStrength
                 if self.mousePosY < self.y:
                     self.cursorY = self.y - self.gunStrength
+        else:
+            if self.mouseUp:
+                self.cursorY -= 1
+            if self.mouseRight:
+                self.cursorX += 1
+            if self.mouseDown:
+                self.cursorY += 1
+            if self.mouseLeft:
+                self.cursorX -= 1
     def fire(self,event):
         i = 0
         self.aimcolor = "black"
