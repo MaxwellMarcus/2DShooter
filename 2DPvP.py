@@ -18,12 +18,13 @@ startLoop = False
 startTime = time.time()
 objects = []
 class Character:
-    def __init__(self,name,left,right,jump,moveAim,file):
+    def __init__(self,name,left,right,jump,moveAim,gunInput,file):
         self.size = root.winfo_screenwidth()/25
         self.leftInput = left
         self.rightInput = right
         self.jumpInput = jump
         self.mouseInput = moveAim
+        self.gunInput = gunInput
         self.dead = False
         self.left = False
         self.right = False
@@ -49,12 +50,20 @@ class Character:
         self.jump = False
         self.jumped = 0
         self.name = name
-
-        root.bind("<Button-1>", self.fire,add='+')
+        self.cursorSpeed = root.winfo_screenwidth()/8000
+        if self.gunInput == 'mouse_button':
+            root.bind('<Button-1>',self.fire,add='+')
+        else:
+            root.bind('<KeyPress>', self.fire,add='+')
         root.bind('<KeyPress>', self.changeMove,add='+')
         root.bind('<KeyRelease>', self.stopMove,add='+')
 
     def changeMove(self,event):
+        #print(event.keysym)
+        #print(self.leftInput)
+        #print(self.rightInput)
+        #print(event.keysym in self.leftInput)
+        #print(event.keysym in self.leftInput)
         if event.keysym in self.leftInput:
             self.left = True
         if event.keysym in self.rightInput:
@@ -73,9 +82,10 @@ class Character:
                 self.mouseLeft = True
 
     def stopMove(self,event):
-        if event.keysym == "a":
+
+        if event.keysym in self.leftInput:
             self.left = False
-        if event.keysym == "d":
+        if event.keysym in self.rightInput:
             self.right = False
         if not self.mouseInput == 'motion':
             if event.keysym == self.mouseInput[0]:
@@ -123,24 +133,33 @@ class Character:
                 if self.mousePosY < self.y:
                     self.cursorY = self.y - self.gunStrength
         else:
-            if self.mouseUp:
-                self.cursorY -= 1
-            if self.mouseRight:
-                self.cursorX += 1
-            if self.mouseDown:
-                self.cursorY += 1
-            if self.mouseLeft:
-                self.cursorX -= 1
+            if self.mouseUp and self.cursorY - 1 < self.y + self.gunStrength and self.cursorY - 1 > self.y - self.gunStrength:
+                self.cursorY -= self.cursorSpeed
+            if self.mouseRight and self.cursorX + 1< self.x + self.gunStrength and self.cursorX + 1 > self.x - self.gunStrength:
+                self.cursorX += self.cursorSpeed
+            if self.mouseDown and self.cursorY + 1< self.y + self.gunStrength and self.cursorY + 1 > self.y - self.gunStrength:
+                self.cursorY += self.cursorSpeed
+            if self.mouseLeft and self.cursorX - 1< self.x + self.gunStrength and self.cursorX - 1 > self.x - self.gunStrength:
+                self.cursorX -= self.cursorSpeed
+            if not self.cursorY < self.y + self.gunStrength:
+                self.cursorY = self.y + self.gunStrength - 1
+            if not self.cursorY > self.y - self.gunStrength:
+                self.cursorY = self.y - self.gunStrength + 1
+            if not self.cursorX < self.x + self.gunStrength:
+                self.cursorX = self.x + self.gunStrength - 1
+            if not self.cursorX > self.x - self.gunStrength:
+                self.cursorX = self.x - self.gunStrength + 1
     def fire(self,event):
-        i = 0
-        self.aimcolor = "black"
-        self.aimcolorchange = time.time()
-        while i < len(objects):
-            objects[i].isHit(self.cursorX,self.cursorY)
-            i += 1
+        if event.keysym in self.gunInput or self.gunInput == 'mouse_button':
+            i = 0
+            self.aimcolor = "black"
+            self.aimcolorchange = time.time()
+            while i < len(objects):
+                objects[i].isHit(self.cursorX,self.cursorY)
+                i += 1
     def isHit(self,x,y):
         if x > self.x - self.size/2 and x < self.x + self.size/2:
-            if y > self.y - self.size/2 and y < self.x + self.size/2:
+            if y > self.y - self.size/2 and y < self.y + self.size/2:
                 self.dead = True
                 objects.remove(objects[self.name])
 
@@ -164,9 +183,9 @@ while startLoop == False:
     root.update()
     if startLoop == True:
         canvas.delete(ALL)
-        character = Character(0,['a'],['d'],['w','s'],['i','l','k','j'],'avatarBlue.gif')
+        character = Character(0,['a'],['d'],['w','s'],['i','l','k','j'],['space'],'avatarBlue.gif')
         objects.append(character)
-        player = Character(1,['Left'],['Right'],['Up','Down'],'motion','avatarRed.gif')
+        player = Character(1,['Left'],['Right'],['Up','Down'],'motion','mouse_button','avatarRed.gif')
         objects.append(player)
         while True:
             character.moveCursor()
