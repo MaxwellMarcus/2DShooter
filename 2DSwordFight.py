@@ -1,4 +1,8 @@
-from tkinter import *
+try:
+    from Tkinter import *
+except:
+    from tkinter import *
+
 import random
 import time
 
@@ -34,26 +38,32 @@ class Character:
         self.mouseRight = False
         self.aimcolor = "blue"
         self.aimcolorchange = 0
-        self.speedx = root.winfo_screenwidth()/2500
-        self.speedy = root.winfo_screenheight()/2500
+        self.speedx = root.winfo_screenwidth()/250
+        self.speedy = root.winfo_screenheight()/250
         self.x = root.winfo_screenwidth()/2
         self.y = (root.winfo_screenheight()/100)*92 - self.size/2
         self.originaly = (root.winfo_screenheight()/100)*92 - self.size/2
         self.cursorX = self.x
         self.cursorY = self.y
-        self.avatarBlue = PhotoImage(file = file)
-        self.avatarBlueNewSize = int(self.avatarBlue.width()/self.size)
-        self.avatarBlue = self.avatarBlue.subsample(self.avatarBlueNewSize)
+        if not 'none_' in file:
+            self.file = file
+            self.avatarBlue = PhotoImage(file = file)
+            self.avatarBlueNewSize = int(self.avatarBlue.width()/self.size)
+            self.avatarBlue = self.avatarBlue.subsample(self.avatarBlueNewSize)
+        else:
+            self.file = file
         self.gunStrength = root.winfo_screenwidth()/5
         self.graphics = canvas.create_rectangle(self.x - self.size/2,self.y - self.size/2,self.x + self.size/2,self.y - self.size/2)
         self.aim = canvas.create_line(self.x,self.y,self.x,self.y)
         self.jump = False
         self.jumped = 0
         self.name = name
-        self.swordLengthX = root.winfo_screenwidth()/13
-        self.swordLengthY = -root.winfo_screenheight()/30
+        self.swordLengthX = self.size*2
+        self.swordLengthY = -self.size/3#-root.winfo_screenheight()/30
         self.swordDirction = 1
         self.cursorSpeed = root.winfo_screenwidth()/8000
+        self.jumpSpeed = root.winfo_screenheight()/100
+        self.gravSpeed = root.winfo_screenheight()/100
         if self.gunInput == 'mouse_button':
             root.bind('<Button-1>',self.fire,add='+')
         else:
@@ -107,13 +117,13 @@ class Character:
         if self.jump:
             if self.y == self.originaly or self.jump:
                 if self.jumped < self.size * 3:
-                    self.y -= .5
-                    self.jumped += .5
+                    self.y -= self.jumpSpeed
+                    self.jumped += self.jumpSpeed
                 else:
                     self.jump = False
                     self.jumped = 0
-        if not self.y == self.originaly and not self.jump:
-            self.y += .5
+        if not self.y >= self.originaly and not self.jump:
+            self.y += self.gravSpeed
     def moveCursor(self):
         if self.mouseInput == 'motion':
             self.mousePosX = root.winfo_pointerx()
@@ -155,14 +165,22 @@ class Character:
             self.aimcolor = "black"
             self.aimcolorchange = time.time()
             while i < len(objects):
-                objects[i].isHit(self.cursorX,self.cursorY)
+                objects[i].isHit(range(self.x,self.x + self.swordLengthX*self.swordDirction),self.y + self.size/2,self.name)
                 i += 1
-    def isHit(self,x,y):
+    def isHit(self,x,bottomY,name):
+        if not self.name == name:
+            for z in range(self.x - self.size/2,self.x + self.size/2):
+                if z in x:
+                    print('worling')
+                    if self.y <= bottomY:
+                        self.dead = True
+                        objects.remove(objects[self.name])
+        '''
         if x > self.x - self.size/2 and x < self.x + self.size/2:
             if y > self.y - self.size/2 and y < self.y + self.size/2:
                 self.dead = True
                 objects.remove(objects[self.name])
-
+'''
     def render(self):
         canvas.delete(self.graphics)
         canvas.delete(self.aim)
@@ -170,8 +188,13 @@ class Character:
             self.aimcolor = "gray"
             self.aimcolorchange = 0
         if not self.dead:
-            self.aim = canvas.create_line(self.x,self.y,self.x + self.swordLengthX*self.swordDirction,self.y + self.swordLengthY,fill = self.aimcolor,width = 10)
-            self.graphics = canvas.create_image(self.x,self.y,image = self.avatarBlue)
+            self.aim = canvas.create_line(self.x,self.y,self.x + self.swordLengthX*self.swordDirction,self.y + self.swordLengthY,fill = self.aimcolor,width = 1)
+            if not 'none_' in self.file:
+                self.graphics = canvas.create_image(self.x,self.y,image = self.avatarBlue)
+            else:
+                self.color = self.file.replace("none_",'')
+                self.graphics = canvas.create_rectangle(self.x - self.size/2,self.y - self.size/2,self.x + self.size/2,self.y + self.size/2,fill = self.color)
+
 
 def start(event):
     global startLoop
@@ -183,9 +206,9 @@ while startLoop == False:
     root.update()
     if startLoop == True:
         canvas.delete(ALL)
-        character = Character(0,['a'],['d'],['w','s'],['i','l','k','j'],['space'],'avatarBlue.gif')
+        character = Character(0,['a'],['d'],['w','s'],['i','l','k','j'],['space'],'none_blue')
         objects.append(character)
-        player = Character(1,['Left'],['Right'],['Up','Down'],'motion','mouse_button','avatarRed.gif')
+        player = Character(1,['Left'],['Right'],['Up','Down'],'motion','mouse_button','none_red')
         objects.append(player)
         while True:
             character.moveCursor()
