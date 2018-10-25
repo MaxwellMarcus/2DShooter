@@ -9,20 +9,27 @@ import time
 root = Tk()
 root.config(cursor = "none")
 
-canvas = Canvas(root,width = root.winfo_screenwidth(),height = root.winfo_screenheight(),background = "black")
+colors = ['red','green','blue','orange','black','purple','pink','white']
+bgColor = colors[random.randint(0,len(colors)-1)]
+
+canvas = Canvas(root,width = root.winfo_screenwidth(),height = root.winfo_screenheight(),background = bgColor)
 canvas.pack()
 
-canvas.create_text(root.winfo_screenwidth()/2,root.winfo_screenheight()/2 - 300,text = '''2DPvP.py''',fill = "white",font = ("TkTextFont",175))
-canvas.create_text(root.winfo_screenwidth()/2,root.winfo_screenheight()/2,text = '''press left mouse to fire''',fill = "gray7",font = ("TkTextFont",25))
-canvas.create_text(root.winfo_screenwidth()/2, root.winfo_screenheight()/2 + 50,text = '''move mouse to aim''',fill = "gray7",font = ("TkTextFont",25))
-canvas.create_text(root.winfo_screenwidth()/2,root.winfo_screenheight()/2 + 300,text = '''Press any key to continue''',fill = "gray7",font = ("TkTextFont",75))
+canvas.create_text(root.winfo_screenwidth()/2,root.winfo_screenheight()/2 - 300,text = '''Fighting Climbers''',fill = "gray",font = ("TkTextFont",175))
+canvas.create_text(root.winfo_screenwidth()/2,root.winfo_screenheight()/2,text = '''p1 uses wasd to move and space bar to fire''',fill = "gray",font = ("TkTextFont",25))
+canvas.create_text(root.winfo_screenwidth()/2, root.winfo_screenheight()/2 + 50,text = '''p2 uses arrow keys to move and mouse to fire''',fill = "gray",font = ("TkTextFont",25))
+canvas.create_text(root.winfo_screenwidth()/2,root.winfo_screenheight()/2 + 300,text = '''Press any key to continue''',fill = "gray",font = ("TkTextFont",75))
 
 startLoop = False
+noWin = True
 
 startTime = time.time()
 objects = []
 class Enviroment:
     def __init__(self,sizex,sizey):
+        self.color = colors[random.randint(0,len(colors)-1)]
+        while self.color == bgColor:
+            self.color = colors[random.randint(0,len(colors)-1)]
         self.grid = []
         self.sizex = sizex
         self.sizey = sizey
@@ -73,11 +80,12 @@ class Enviroment:
             z = 0
             while z < len(self.grid[i]):
                 if self.grid[i][z] == 1:
-                    canvas.create_rectangle((z+1)*self.rectSizex,(i+1)*self.rectSizey,z*self.rectSizex,i*self.rectSizey,fill='red')
+                    canvas.create_rectangle((z+1)*self.rectSizex,(i+1)*self.rectSizey,z*self.rectSizex,i*self.rectSizey,fill=self.color)
                 z += 1
             i += 1
 class Character:
     def __init__(self,name,left,right,jump,moveAim,gunInput,file):
+        self.jumpAble = True
         self.size = root.winfo_screenwidth()/25
         self.leftInput = left
         self.rightInput = right
@@ -93,8 +101,8 @@ class Character:
         self.mouseRight = False
         self.aimcolor = "blue"
         self.aimcolorchange = 0
-        self.speedx = root.winfo_screenwidth()/2500
-        self.speedy = root.winfo_screenheight()/2500
+        self.speedx = root.winfo_screenwidth()/250
+        self.speedy = root.winfo_screenheight()/250
         self.x = root.winfo_screenwidth()/2
         self.y = (root.winfo_screenheight()/100)*92 - self.size/2
         self.originaly = (root.winfo_screenheight()/100)*92 - self.size/2
@@ -118,8 +126,8 @@ class Character:
         self.swordLengthY = -self.size/3#-root.winfo_screenheight()/30
         self.swordDirction = 1
         self.cursorSpeed = root.winfo_screenwidth()/8000
-        self.jumpSpeed = root.winfo_screenheight()/1500
-        self.gravSpeed = root.winfo_screenheight()/1500
+        self.jumpSpeed = root.winfo_screenheight()/150
+        self.gravSpeed = root.winfo_screenheight()/150
         self.hit = 0
         self.stillHit = 0
         if self.gunInput == 'mouse_button':
@@ -137,9 +145,10 @@ class Character:
             self.right = True
             self.swordDirction = 1
         if event.keysym in self.jumpInput:
-            spoty = int((self.y + self.size/2)/enviroment.rectSizey)
-            spotx = int((self.x + self.size/2)/enviroment.rectSizex)
-            if enviroment.grid[spoty][spotx] == 1:
+            spoty = (self.y + self.size/2)/enviroment.rectSizey
+            spot_x_leftside = (self.x - self.size/2)/enviroment.rectSizex
+            spot_x_rightside = (self.x + self.size/2)/enviroment.rectSizex
+            if enviroment.grid[spoty][spot_x_leftside] == 1 or enviroment.grid[spoty][spot_x_rightside] == 1:
                 self.jump = True
 
     def stopMove(self,event):
@@ -151,37 +160,46 @@ class Character:
 
     def move(self):
         spoty = (self.y + self.size/2)/enviroment.rectSizey
+        spot_y_middle = (self.y + self.size/3)/enviroment.rectSizey
+        spot_x_middle = (self.x)/enviroment.rectSizey
         spot_x_leftside = (self.x - self.size/2)/enviroment.rectSizex
         spot_x_rightside = (self.x + self.size/2)/enviroment.rectSizex
         if (int(spot_x_rightside) == 0 and int(spoty) == 9) or (int(spot_x_leftside) == 9 and int(spoty) == 9):
             self.x = self.originalx
             self.y = self.originaly
-
+        if int(spot_x_middle) == 0 and int(spoty) == 2:
+            if self.name == 0:
+                win('blue')
+            else:
+                win('red')
         if self.hit == 0:
             if self.left:
-                if self.x > 0 + self.size/2:
-                    self.x -= self.speedx
+                if enviroment.grid[int(spot_y_middle)][int(spot_x_leftside)] == 0:
+                    if self.x > 0 + self.size/2:
+                        self.x -= self.speedx
             if self.right:
-                if self.x < root.winfo_screenwidth() - self.size/2:
-                    self.x += self.speedx
+                if enviroment.grid[int(spot_y_middle)][int(spot_x_rightside)] == 0:
+                    if self.x < root.winfo_screenwidth() - self.size/2:
+                        self.x += self.speedx
         else:
-            if self.stillHit <= 200:
+            if self.stillHit <= 20:
                 if self.x < root.winfo_screenwidth() - self.size/2 and self.x > 0 + self.size/2:
                     self.x += self.speedx * 2 * self.hit
                 self.stillHit += 1
             else:
                 self.hit = 0
         if self.jump:
-            if enviroment.grid[int(spoty)][int(spot_x_leftside)] == 1 or enviroment.grid[int(spoty)][int(spot_x_rightside)] == 1 or self.jump:
-                if self.jumped < enviroment.rectSizey*2.75 and self.y - self.size/2 > 0:
-                        self.y -= self.jumpSpeed
-                        self.jumped += self.jumpSpeed
-                else:
-                    self.jump = False
-                    self.jumped = 0
+            if self.jumped < enviroment.rectSizey*2.75 and self.y - self.size/2 > 0:
+                    self.y -= self.jumpSpeed
+                    self.jumped += self.jumpSpeed
+            else:
+                self.jump = False
+                self.jumped = 0
 
         if (not enviroment.grid[int(spoty)][int(spot_x_leftside)] == 1 and not enviroment.grid[int(spoty)][int(spot_x_rightside)] == 1) and not self.jump:
             self.y += self.gravSpeed
+        else:
+            self.jumpAble = True
     def fire(self,event):
         if event.keysym in self.gunInput or self.gunInput == 'mouse_button':
             i = 0
@@ -223,6 +241,11 @@ class Character:
 def start(event):
     global startLoop
     startLoop = True
+def win(winner):
+    global noWin
+    noWin = False
+    canvas.create_text(root.winfo_screenwidth()/2,root.winfo_screenheight()/2,text = winner, fill = "gray",font = ("TkTextFont",50))
+    canvas.create_text(root.winfo_screenwidth()/2,root.winfo_screenheight()/2 + 100,text = 'wins',fill = "gray",font = ("TkTextFont",50))
 
 root.bind("<Key>",start)
 root.update()
@@ -231,11 +254,18 @@ enviroment = Enviroment(10,10)
 enviroment.setRow(10)
 enviroment.setBlock(1,10,0)
 enviroment.setBlock(10,10,0)
+
 enviroment.setBlock(2,8)
 enviroment.setBlock(4,6)
 enviroment.setBlock(6,4)
 enviroment.setBlock(8,2)
-enviroment.setBlock(10,1)
+enviroment.setBlock(10,2)
+
+enviroment.setBlock(9,8)
+enviroment.setBlock(7,6)
+enviroment.setBlock(5,4)
+enviroment.setBlock(3,2)
+enviroment.setBlock(1,2,0)
 while startLoop == False:
     root.update()
     if startLoop == True:
@@ -247,7 +277,7 @@ while startLoop == False:
         enviroment.render()
 
         enviroment.createGrid()
-        while True:
+        while noWin:
 
             character.move()
             character.render()
@@ -255,4 +285,8 @@ while startLoop == False:
             player.move()
             player.render()
 
+            root.update()
+        while True:
+            player.render()
+            character.render()
             root.update()
