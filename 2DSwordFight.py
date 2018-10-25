@@ -104,7 +104,7 @@ class Character:
         self.speedx = root.winfo_screenwidth()/250
         self.speedy = root.winfo_screenheight()/250
         self.x = root.winfo_screenwidth()/2
-        self.y = (root.winfo_screenheight()/100)*92 - self.size/2
+        self.y = enviroment.rectSizey * 8
         self.originaly = (root.winfo_screenheight()/100)*92 - self.size/2
         self.originalx = self.x
         self.cursorX = self.x
@@ -167,7 +167,12 @@ class Character:
         if (int(spot_x_rightside) == 0 and int(spoty) == 9) or (int(spot_x_leftside) == 9 and int(spoty) == 9):
             self.x = self.originalx
             self.y = self.originaly
-        if int(spot_x_middle) == 0 and int(spoty) == 2:
+        if int(spot_x_leftside) == 0 and int(spot_y_middle) == 0:
+            if self.name == 0:
+                win('blue')
+            else:
+                win('red')
+        if int(spot_x_rightside) == 9 and int(spot_y_middle) == 0:
             if self.name == 0:
                 win('blue')
             else:
@@ -175,11 +180,11 @@ class Character:
         if self.hit == 0:
             if self.left:
                 if enviroment.grid[int(spot_y_middle)][int(spot_x_leftside)] == 0:
-                    if self.x > 0 + self.size/2:
+                    if self.x > 0 + self.size/2 + 10:
                         self.x -= self.speedx
             if self.right:
                 if enviroment.grid[int(spot_y_middle)][int(spot_x_rightside)] == 0:
-                    if self.x < root.winfo_screenwidth() - self.size/2:
+                    if self.x < root.winfo_screenwidth() - self.size/2 - 10:
                         self.x += self.speedx
         else:
             if self.stillHit <= 20:
@@ -244,8 +249,8 @@ def start(event):
 def win(winner):
     global noWin
     noWin = False
-    canvas.create_text(root.winfo_screenwidth()/2,root.winfo_screenheight()/2,text = winner, fill = "gray",font = ("TkTextFont",50))
-    canvas.create_text(root.winfo_screenwidth()/2,root.winfo_screenheight()/2 + 100,text = 'wins',fill = "gray",font = ("TkTextFont",50))
+    canvas.create_text(root.winfo_screenwidth()/2,root.winfo_screenheight()/2,text = winner, fill = "gray",font = ("TkTextFont",100))
+    canvas.create_text(root.winfo_screenwidth()/2,root.winfo_screenheight()/2 + 100,text = 'wins',fill = "gray",font = ("TkTextFont",100))
 
 root.bind("<Key>",start)
 root.update()
@@ -255,17 +260,14 @@ enviroment.setRow(10)
 enviroment.setBlock(1,10,0)
 enviroment.setBlock(10,10,0)
 
-enviroment.setBlock(2,8)
-enviroment.setBlock(4,6)
-enviroment.setBlock(6,4)
-enviroment.setBlock(8,2)
-enviroment.setBlock(10,2)
-
-enviroment.setBlock(9,8)
-enviroment.setBlock(7,6)
+enviroment.setBlock(5,8)
+enviroment.setBlock(6,8)
+enviroment.setBlock(3,6)
+enviroment.setBlock(8,6)
 enviroment.setBlock(5,4)
+enviroment.setBlock(6,4)
 enviroment.setBlock(3,2)
-enviroment.setBlock(1,2,0)
+enviroment.setBlock(8,2)
 while startLoop == False:
     root.update()
     if startLoop == True:
@@ -277,6 +279,9 @@ while startLoop == False:
         enviroment.render()
 
         enviroment.createGrid()
+
+        canvas.create_rectangle(enviroment.rectSizex*0,enviroment.rectSizey*1,enviroment.rectSizex*1,enviroment.rectSizey*2,fill = 'gold')
+        canvas.create_rectangle(enviroment.rectSizex*10,enviroment.rectSizey*1,enviroment.rectSizex*9,enviroment.rectSizey*2,fill = 'gold')
         while noWin:
 
             character.move()
