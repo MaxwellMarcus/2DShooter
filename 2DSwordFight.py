@@ -98,6 +98,7 @@ class Character:
         self.x = root.winfo_screenwidth()/2
         self.y = (root.winfo_screenheight()/100)*92 - self.size/2
         self.originaly = (root.winfo_screenheight()/100)*92 - self.size/2
+        self.originalx = self.x
         self.cursorX = self.x
         self.cursorY = self.y
         if not 'none_' in file:
@@ -152,6 +153,9 @@ class Character:
         spoty = (self.y + self.size/2)/enviroment.rectSizey
         spot_x_leftside = (self.x - self.size/2)/enviroment.rectSizex
         spot_x_rightside = (self.x + self.size/2)/enviroment.rectSizex
+        if (int(spot_x_rightside) == 0 and int(spoty) == 9) or (int(spot_x_leftside) == 9 and int(spoty) == 9):
+            self.x = self.originalx
+            self.y = self.originaly
 
         if self.hit == 0:
             if self.left:
@@ -168,7 +172,7 @@ class Character:
             else:
                 self.hit = 0
         if self.jump:
-            if (not enviroment.grid[int(spoty)][int(spot_x_leftside)] == 1 or not enviroment.grid[int(spoty)][int(spot_x_rightside)] == 1) or self.jump:
+            if enviroment.grid[int(spoty)][int(spot_x_leftside)] == 1 or enviroment.grid[int(spoty)][int(spot_x_rightside)] == 1 or self.jump:
                 if self.jumped < enviroment.rectSizey*2.75 and self.y - self.size/2 > 0:
                         self.y -= self.jumpSpeed
                         self.jumped += self.jumpSpeed
@@ -176,9 +180,8 @@ class Character:
                     self.jump = False
                     self.jumped = 0
 
-        if (not enviroment.grid[int(spoty)][int(spot_x_leftside)] == 1 or not enviroment.grid[int(spoty)][int(spot_x_rightside)] == 1) and not self.jump:
+        if (not enviroment.grid[int(spoty)][int(spot_x_leftside)] == 1 and not enviroment.grid[int(spoty)][int(spot_x_rightside)] == 1) and not self.jump:
             self.y += self.gravSpeed
-
     def fire(self,event):
         if event.keysym in self.gunInput or self.gunInput == 'mouse_button':
             i = 0
