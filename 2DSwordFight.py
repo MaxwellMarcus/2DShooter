@@ -54,6 +54,7 @@ class Game:
         root.update()
         self.lastUpdate = self.time
     def winUpdate(self):
+        self.time = time.time() - self.startTime
         i = 0
         while i < len(self.objects):
             self.objects[i].render()
@@ -61,6 +62,8 @@ class Game:
         root.update()
         self.lastUpdate = self.time
 
+    def startUpdate(self):
+        self.time = time.time() - self.startTime
     def start(self,event):
         self.startLoop = True
 
@@ -168,8 +171,10 @@ class Character:
         if not 'none_' in file:
             self.file = file
             self.avatarBlue = PhotoImage(file = file)
-            self.avatarBlueNewSize = int(self.avatarBlue.width()/self.size)
-            self.avatarBlue = self.avatarBlue.subsample(self.avatarBlueNewSize)
+            self.avatarBlueNewSizeX = round(self.size/self.avatarBlue.width())
+            self.avatarBlueNewSizeY = round(self.size/self.avatarBlue.height())
+            #self.avatarBlue = self.avatarBlue.subsample(int(1),int(self.avatarBlueNewSizeY)/2)
+            self.avatarBlue = self.avatarBlue.zoom(int(self.avatarBlueNewSizeX),int(self.avatarBlueNewSizeY))
         else:
             self.file = file
         self.gunStrength = root.winfo_screenwidth()/5
@@ -217,7 +222,6 @@ class Character:
             self.right = False
 
     def move(self):
-        print(game.time - game.lastUpdate)
         self.speedx = self.originalspeedx * ((game.time - game.lastUpdate)/0.002)
         self.jumpSpeed = self.originalJumpSpeed * ((game.time - game.lastUpdate)/0.002)
         self.gravSpeed = self.originalGravSpeed * ((game.time - game.lastUpdate)/0.002)
@@ -258,7 +262,7 @@ class Character:
                     if not enviroment.grid[int(spot_y_middle)][int(spot_x_leftside)] == 1 and not enviroment.grid[int(spot_y_middle)][int(spot_x_rightside)] == 0:
                         self.x -= self.speedx
         else:
-            if self.stillHit <= 1000:
+            if self.stillHit <= 500:
                 if self.x < root.winfo_screenwidth() - self.size and self.x > 0 + self.size:
                     self.x += self.speedx * 2 * self.hit
                 else:
@@ -268,7 +272,6 @@ class Character:
                 self.hit = 0
         if self.jump:
             if self.jumped < enviroment.rectSizey*2.75 and self.y - self.size/2 > 0:
-                print(game.time)
                 self.y -= self.jumpSpeed
                 self.jumped += self.jumpSpeed
             else:
@@ -285,15 +288,15 @@ class Character:
                 other = game.objects[i]
                 if self.x + self.size/2 > other.x - other.size/2 and (not self.x > other.x) and (self.y - self.size/2 < other.y + other.size/2 and self.y + self.size/2 > other.y - other.size/2):
                     self.stillHit = 0
-                    self.hit = -.5
+                    self.hit = -.2
                     other.stillHit = 0
-                    other.hit = .5
+                    other.hit = .2
 
                 if self.x - self.size/2 < other.x + other.size/2 and (not self.x < other.x) and (self.y - self.size/2 < other.y + other.size/2 and self.y + self.size/2 > other.y - other.size/2):
                     self.stillHit = 0
-                    self.hit = .5
+                    self.hit = .2
                     other.stillHit = 0
-                    other.hit = -.5
+                    other.hit = -.2
 
             i += 1
     def fire(self,event):
@@ -351,19 +354,19 @@ game.startMenu()
 
 while game.startLoop == False:
     root.update()
+    game.startUpdate()
     if game.startLoop == True:
         root.bind('<Return>',game.restart)
 
         game.playScreen()
 
-        character = Character(0,['a'],['d'],['w','s'],['i','l','k','j'],['space'],'none_blue')
+        character = Character(0,['a'],['d'],['w','s'],['i','l','k','j'],['space'],'redKnightSide.gif')
         game.objects.append(character)
         player = Character(1,['Left'],['Right'],['Up','Down'],'motion','mouse_button','none_red')
         game.objects.append(player)
 
         enviroment.createGrid()
         while True:
-            game.startTime = time.time()
             while game.noWin:
                 game.update()
             while not game.noWin:
