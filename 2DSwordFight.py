@@ -173,7 +173,6 @@ class Character:
             self.avatarBlue = PhotoImage(file = file)
             self.avatarBlueNewSizeX = round(self.size/self.avatarBlue.width())
             self.avatarBlueNewSizeY = round(self.size/self.avatarBlue.height())
-            #self.avatarBlue = self.avatarBlue.subsample(int(1),int(self.avatarBlueNewSizeY)/2)
             self.avatarBlue = self.avatarBlue.zoom(int(self.avatarBlueNewSizeX),int(self.avatarBlueNewSizeY))
         else:
             self.file = file
@@ -360,9 +359,9 @@ while game.startLoop == False:
 
         game.playScreen()
 
-        character = Character(0,['a'],['d'],['w','s'],['i','l','k','j'],['space'],'redKnightSide.gif')
+        character = Character(0,['a'],['d'],['w','s'],['i','l','k','j'],['space'],'blueKnightSide.gif')
         game.objects.append(character)
-        player = Character(1,['Left'],['Right'],['Up','Down'],'motion','mouse_button','none_red')
+        player = Character(1,['Left'],['Right'],['Up','Down'],'motion','mouse_button','redKnightSide.gif')
         game.objects.append(player)
 
         enviroment.createGrid()
