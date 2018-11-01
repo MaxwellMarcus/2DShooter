@@ -143,8 +143,9 @@ class Character:
     def __init__(self,name,left,right,jump,moveAim,gunInput,file):
         self.screenwidth = root.winfo_screenwidth()
         self.screenheight = root.winfo_screenheight()
-        self.maxVelX = 1
-        self.maxVelY = .5
+        self.name = name
+        self.maxVelX = 10
+        self.maxVelY = 10
         self.jumpAble = True
         self.size = root.winfo_screenwidth()/25
         self.leftInput = left
@@ -161,11 +162,14 @@ class Character:
         self.mouseRight = False
         self.aimcolor = "blue"
         self.aimcolorchange = 0
-        self.speedx = self.screenwidth/2500
+        self.speedx = self.screenwidth/1000
         self.originalspeedx = self.speedx
-        self.speedy = root.winfo_screenheight()/100
-        self.originalspeedy = self.speedy
-        self.x = root.winfo_screenwidth()/2
+        if self.name+1 % 2 == 0:
+            self.x = root.winfo_screenwidth()-((root.winfo_screenwidth()/10)*(self.name+1)/2)
+        else:
+            self.x = (root.winfo_screenwidth()/10)*(((self.name+2)/2))
+        print(root.winfo_screenwidth() - root.winfo_screenwidth()-((root.winfo_screenwidth()/10)*(self.name+1)/2))
+        print(self.x)
         self.y = enviroment.rectSizey * 7
         self.originaly = self.y
         self.originalx = self.x
@@ -185,14 +189,12 @@ class Character:
         self.aim = canvas.create_line(self.x,self.y,self.x,self.y)
         self.jump = False
         self.jumped = 0
-        self.name = name
         self.swordLengthX = self.size*2
         self.swordLengthY = -self.size/3#-root.winfo_screenheight()/30
         self.swordDirction = 1
-        self.cursorSpeed = root.winfo_screenwidth()/8000
-        self.jumpSpeed = root.winfo_screenheight()/1500
+        self.jumpSpeed = root.winfo_screenheight()/600
         self.originalJumpSpeed = self.jumpSpeed
-        self.gravSpeed = root.winfo_screenheight()/1500
+        self.gravSpeed = root.winfo_screenheight()/600
         self.originalGravSpeed = self.gravSpeed
         self.hit = 0
         self.stillHit = 0
@@ -262,7 +264,7 @@ class Character:
                 self.velocityX = 0
 
         else:
-            if self.stillHit <= 500:
+            if self.stillHit <= self.screenwidth/2:
                 if self.x < root.winfo_screenwidth() - self.size and self.x > 0 + self.size:
                     self.velocityX += self.speedx * 2 * self.hit
                 #else:
@@ -273,7 +275,7 @@ class Character:
         if self.jump:
             if self.jumped < enviroment.rectSizey*2.75 and self.y - self.size/2 > 0:
                 self.velocityY -= self.jumpSpeed
-                self.jumped += self.jumpSpeed
+                self.jumped -= self.velocityY
             else:
                 self.velocityY = 0
                 self.jump = False
@@ -313,17 +315,12 @@ class Character:
         if self.velocityY < -self.maxVelY:
             self.velocityY += self.jumpSpeed
 
-        if self.x > 0 + self.size/2 + 1 and not self.x > self.screenwidth - (self.size/2) - 1:
-            self.x += self.velocityX
-        else:
-            self.velocityX = -self.velocityX
-        if self.y > 0 + self.size/2 + 1 and not self.y > self.screenheight - (self.size) - 1:
-            self.y += self.velocityY
-        else:
-            self.velocityY = -self.velocityY
+        if enviroment.grid[int(spot_y_middle)][int(spot_x_leftside)] == 1 or enviroment.grid[int(spot_y_middle)][int(spot_x_rightside)] == 1 or self.x - self.size/2 < 0 or self.x + self.size/2 + self.velocityX > self.screenwidth:
+            self.velocityX = -self.velocityX/2
 
-        if enviroment.grid[int(spot_y_middle)][int(spot_x_leftside)] == 0:
-            print('worling')
+        self.x += self.velocityX
+        self.y += self.velocityY
+
     def fire(self,event):
         if event.keysym in self.gunInput or self.gunInput == 'mouse_button':
             i = 0
