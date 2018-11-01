@@ -155,9 +155,9 @@ class Character:
         self.mouseRight = False
         self.aimcolor = "blue"
         self.aimcolorchange = 0
-        self.speedx = root.winfo_screenwidth()/3000
+        self.speedx = root.winfo_screenwidth()/300
         self.originalspeedx = self.speedx
-        self.speedy = root.winfo_screenheight()/2500
+        self.speedy = root.winfo_screenheight()/250
         self.originalspeedy = self.speedy
         self.x = root.winfo_screenwidth()/2
         self.y = enviroment.rectSizey * 7
@@ -182,9 +182,9 @@ class Character:
         self.swordLengthY = -self.size/3#-root.winfo_screenheight()/30
         self.swordDirction = 1
         self.cursorSpeed = root.winfo_screenwidth()/8000
-        self.jumpSpeed = root.winfo_screenheight()/1500
+        self.jumpSpeed = root.winfo_screenheight()/150
         self.originalJumpSpeed = self.jumpSpeed
-        self.gravSpeed = root.winfo_screenheight()/1500
+        self.gravSpeed = root.winfo_screenheight()/150
         self.originalGravSpeed = self.gravSpeed
         self.hit = 0
         self.stillHit = 0
@@ -217,11 +217,9 @@ class Character:
             self.right = False
 
     def move(self):
-        print(game.time - game.lastUpdate)
-        self.speedx = self.originalspeedx * ((game.time - game.lastUpdate)/0.002)
-        self.jumpSpeed = self.originalJumpSpeed * ((game.time - game.lastUpdate)/0.002)
-        self.gravSpeed = self.originalGravSpeed * ((game.time - game.lastUpdate)/0.002)
-
+        self.speedx = self.originalspeedx * ((game.time - game.lastUpdate)/0.02)
+        self.jumpSpeed = self.originalJumpSpeed * ((game.time - game.lastUpdate)/0.02)
+        self.gravSpeed = self.originalGravSpeed * ((game.time - game.lastUpdate)/0.02)
         spoty = (self.y + self.size/2)/enviroment.rectSizey
         spot_y_middle = (self.y + self.size/3)/enviroment.rectSizey
         spot_y_top = (self.y - self.size/2)/enviroment.rectSizey
@@ -258,7 +256,7 @@ class Character:
                     if not enviroment.grid[int(spot_y_middle)][int(spot_x_leftside)] == 1 and not enviroment.grid[int(spot_y_middle)][int(spot_x_rightside)] == 0:
                         self.x -= self.speedx
         else:
-            if self.stillHit <= 1000:
+            if self.stillHit <= 50:
                 if self.x < root.winfo_screenwidth() - self.size and self.x > 0 + self.size:
                     self.x += self.speedx * 2 * self.hit
                 else:
@@ -268,7 +266,6 @@ class Character:
                 self.hit = 0
         if self.jump:
             if self.jumped < enviroment.rectSizey*2.75 and self.y - self.size/2 > 0:
-                print(game.time)
                 self.y -= self.jumpSpeed
                 self.jumped += self.jumpSpeed
             else:
