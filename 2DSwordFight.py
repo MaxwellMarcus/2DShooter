@@ -143,7 +143,7 @@ class Character:
     def __init__(self,name,left,right,jump,moveAim,gunInput,file):
         self.screenwidth = root.winfo_screenwidth()
         self.screenheight = root.winfo_screenheight()
-        self.maxVelX = 3
+        self.maxVelX = 1
         self.maxVelY = .5
         self.jumpAble = True
         self.size = root.winfo_screenwidth()/25
@@ -161,7 +161,7 @@ class Character:
         self.mouseRight = False
         self.aimcolor = "blue"
         self.aimcolorchange = 0
-        self.speedx = .25#float((self.screenwidth/1000)/4)
+        self.speedx = self.screenwidth/2500
         self.originalspeedx = self.speedx
         self.speedy = root.winfo_screenheight()/100
         self.originalspeedy = self.speedy
@@ -190,9 +190,9 @@ class Character:
         self.swordLengthY = -self.size/3#-root.winfo_screenheight()/30
         self.swordDirction = 1
         self.cursorSpeed = root.winfo_screenwidth()/8000
-        self.jumpSpeed = float(root.winfo_screenheight()/600)
+        self.jumpSpeed = root.winfo_screenheight()/1500
         self.originalJumpSpeed = self.jumpSpeed
-        self.gravSpeed = root.winfo_screenheight()/600
+        self.gravSpeed = root.winfo_screenheight()/1500
         self.originalGravSpeed = self.gravSpeed
         self.hit = 0
         self.stillHit = 0
@@ -253,23 +253,16 @@ class Character:
                 game.win('red')
         if self.hit == 0:
             if self.left:
-                if enviroment.grid[int(spot_y_middle)][int(spot_x_leftside)] == 0:
-                    if self.x > 0 + self.size/2 + 10:
-                        self.velocityX -= self.speedx
-                else:
-                    if not enviroment.grid[int(spot_y_middle)][int(spot_x_rightside)] == 1 and not enviroment.grid[int(spot_y_middle)][int(spot_x_leftside)] == 0:
-                        self.velocityX += self.speedx
+                self.velocityX -= self.speedx
+
             if self.right:
-                if enviroment.grid[int(spot_y_middle)][int(spot_x_rightside)] == 0:
-                    if self.x < root.winfo_screenwidth() - self.size/2 - 10:
-                            self.velocityX += self.speedx
-                else:
-                    if not enviroment.grid[int(spot_y_middle)][int(spot_x_leftside)] == 1 and not enviroment.grid[int(spot_y_middle)][int(spot_x_rightside)] == 0:
-                        self.velocityX -= self.speedx
+                self.velocityX += self.speedx
+
             if not self.right and not self.left:
                 self.velocityX = 0
+
         else:
-            if self.stillHit <= 50:
+            if self.stillHit <= 500:
                 if self.x < root.winfo_screenwidth() - self.size and self.x > 0 + self.size:
                     self.velocityX += self.speedx * 2 * self.hit
                 #else:
@@ -289,7 +282,9 @@ class Character:
         if (not enviroment.grid[int(spoty)][int(spot_x_leftside)] == 1 and not enviroment.grid[int(spoty)][int(spot_x_rightside)] == 1) and not self.jump:
             self.velocityY += self.gravSpeed
         else:
-            self.velocityY = 0
+            if not self.jump:
+                self.velocityY = 0
+
             self.jumpAble = True
         i = 0
         while i < len(game.objects)-1:
@@ -314,14 +309,21 @@ class Character:
             self.velocityX += self.speedx
 
         if self.velocityY > self.maxVelY:
-            self.velocityY -= self.speedy
+            self.velocityY -= self.gravSpeed
         if self.velocityY < -self.maxVelY:
-            self.velocityY += self.speedy
+            self.velocityY += self.jumpSpeed
 
-        if self.x > 0 + self.size/2 + 1 and not self.x > self.screenwidth - (self.size) - 1:
+        if self.x > 0 + self.size/2 + 1 and not self.x > self.screenwidth - (self.size/2) - 1:
             self.x += self.velocityX
+        else:
+            self.velocityX = -self.velocityX
         if self.y > 0 + self.size/2 + 1 and not self.y > self.screenheight - (self.size) - 1:
             self.y += self.velocityY
+        else:
+            self.velocityY = -self.velocityY
+
+        if enviroment.grid[int(spot_y_middle)][int(spot_x_leftside)] == 0:
+            print('worling')
     def fire(self,event):
         if event.keysym in self.gunInput or self.gunInput == 'mouse_button':
             i = 0
