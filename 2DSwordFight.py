@@ -144,8 +144,8 @@ class Character:
         self.screenwidth = root.winfo_screenwidth()
         self.screenheight = root.winfo_screenheight()
         self.name = name
-        self.maxVelX = 10
-        self.maxVelY = 10
+        self.maxVelX = 1
+        self.maxVelY = 1
         self.jumpAble = True
         self.size = root.winfo_screenwidth()/25
         self.leftInput = left
@@ -264,15 +264,24 @@ class Character:
                 self.velocityX = 0
 
         else:
-            if self.stillHit <= self.screenwidth/2:
-                print(self.stillHit)
-                if self.stillHit == 0:
-                    self.velocityX = self.maxVelX * 2 * self.hit
-                if self.x < root.winfo_screenwidth() - self.size and self.x > 0 + self.size:
-                    self.velocityX -= self.speedx/10 * self.hit
-                self.stillHit += self.velocityX
+            if self.hit == 1:
+                if not self.velocityX < 0:
+                    if self.stillHit == 0:
+                        self.velocityX = self.maxVelX * 2 * self.hit
+                    if self.x < root.winfo_screenwidth() - self.size and self.x > 0 + self.size:
+                        self.velocityX -= self.speedx/100 * self.hit
+                    self.stillHit += self.velocityX
+                else:
+                    self.hit = 0
             else:
-                self.hit = 0
+                if not self.velocityX == 0:
+                    if self.stillHit == 0:
+                        self.velocityX = self.maxVelX * 2 * self.hit
+                    if self.x < root.winfo_screenwidth() - self.size and self.x > 0 + self.size:
+                        self.velocityX -= self.speedx/100 * self.hit
+                    self.stillHit += self.velocityX
+                else:
+                    self.hit = 0
         if self.jump:
             if self.jumped < enviroment.rectSizey*2.75 and self.y - self.size/2 > 0:
                 self.velocityY -= self.jumpSpeed
