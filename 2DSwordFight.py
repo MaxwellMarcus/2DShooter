@@ -164,10 +164,10 @@ class Character:
         self.aimcolorchange = 0
         self.speedx = self.screenwidth/1000
         self.originalspeedx = self.speedx
-        if self.name+1 % 2 == 0:
-            self.x = root.winfo_screenwidth()-((root.winfo_screenwidth()/10)*(self.name+1)/2)
+        if (self.name+1) % 2 == 0:
+            self.x = enviroment.rectSizex * 7
         else:
-            self.x = (root.winfo_screenwidth()/10)*(((self.name+2)/2))
+            self.x = enviroment.rectSizex * 3
         print(root.winfo_screenwidth() - root.winfo_screenwidth()-((root.winfo_screenwidth()/10)*(self.name+1)/2))
         print(self.x)
         self.y = enviroment.rectSizey * 7
@@ -265,11 +265,12 @@ class Character:
 
         else:
             if self.stillHit <= self.screenwidth/2:
+                print(self.stillHit)
+                if self.stillHit == 0:
+                    self.velocityX = self.maxVelX * 2 * self.hit
                 if self.x < root.winfo_screenwidth() - self.size and self.x > 0 + self.size:
-                    self.velocityX += self.speedx * 2 * self.hit
-                #else:
-                    #self.stillHit = 0
-                self.stillHit += 1
+                    self.velocityX -= self.speedx/10 * self.hit
+                self.stillHit += self.velocityX
             else:
                 self.hit = 0
         if self.jump:
@@ -310,9 +311,9 @@ class Character:
         if self.velocityX < -self.maxVelX:
             self.velocityX += self.speedx
 
-        if self.velocityY > self.maxVelY:
+        if self.velocityY > self.maxVelY and self.hit == 0:
             self.velocityY -= self.gravSpeed
-        if self.velocityY < -self.maxVelY:
+        if self.velocityY < -self.maxVelY and self.hit == 0:
             self.velocityY += self.jumpSpeed
 
         if enviroment.grid[int(spot_y_middle)][int(spot_x_leftside)] == 1 or enviroment.grid[int(spot_y_middle)][int(spot_x_rightside)] == 1 or self.x - self.size/2 < 0 or self.x + self.size/2 + self.velocityX > self.screenwidth:
