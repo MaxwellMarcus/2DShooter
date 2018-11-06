@@ -144,8 +144,10 @@ class Character:
         self.screenwidth = root.winfo_screenwidth()
         self.screenheight = root.winfo_screenheight()
         self.name = name
-        self.maxVelX = 1
-        self.maxVelY = 1
+        self.maxVelX = 10
+        self.maxVelY = 10
+        self.originalMaxVelX = self.maxVelX
+        self.originalMaxVelY = self.maxVelY
         self.jumpAble = True
         self.size = root.winfo_screenwidth()/25
         self.leftInput = left
@@ -168,8 +170,6 @@ class Character:
             self.x = enviroment.rectSizex * 7
         else:
             self.x = enviroment.rectSizex * 3
-        print(root.winfo_screenwidth() - root.winfo_screenwidth()-((root.winfo_screenwidth()/10)*(self.name+1)/2))
-        print(self.x)
         self.y = enviroment.rectSizey * 7
         self.originaly = self.y
         self.originalx = self.x
@@ -200,6 +200,8 @@ class Character:
         self.stillHit = 0
         self.velocityX = 0
         self.velocityY = 0
+        self.originalVelocityX = self.velocityX
+        self.originalVelocityY = self.velocityY
         if self.gunInput == 'mouse_button':
             root.bind('<Button-1>',self.fire,add='+')
         else:
@@ -228,6 +230,10 @@ class Character:
             self.right = False
 
     def move(self):
+        self.velocityX = self.originalVelocityX * ((game.time - game.lastUpdate)/0.015)
+        self.velocityY = self.originalVelocityY * ((game.time - game.lastUpdate)/0.015)
+        self.maxVelX = self.originalMaxVelX * ((game.time - game.lastUpdate)/0.015)
+        self.maxVelY = self.originalMaxVelY * ((game.time - game.lastUpdate)/0.015)
         self.speedx = self.originalspeedx * ((game.time - game.lastUpdate)/0.015)
         self.jumpSpeed = self.originalJumpSpeed * ((game.time - game.lastUpdate)/0.015)
         self.gravSpeed = self.originalGravSpeed * ((game.time - game.lastUpdate)/0.015)
@@ -331,6 +337,8 @@ class Character:
         self.x += self.velocityX
         self.y += self.velocityY
 
+        self.originalVelocityX = self.velocityX
+        self.originalVelocityY = self.velocityY
     def fire(self,event):
         if event.keysym in self.gunInput or self.gunInput == 'mouse_button':
             i = 0
